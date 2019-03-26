@@ -6,8 +6,8 @@ version 1.0
 **Day One**
 + Introduction / IBM Cloud
 + _Docker Overview and **Lab**_
-  + [https://github.com/phthom/ContainerOrchestration/blob/master/1-PrepareLab.md](https://github.com/phthom/ContainerOrchestration/blob/master/1-PrepareLab.md)
-  + [https://github.com/phthom/ContainerOrchestration/blob/master/2-DockerLab.md](https://github.com/phthom/ContainerOrchestration/blob/master/2-DockerLab.md)
+  + [https://github.com/Azzoz06/ContainerWkshp/blob/master/1-PrepareLab.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/1-PrepareLab.md)
+  + [https://github.com/Azzoz06/ContainerWkshp/blob/master/2-DockerLab.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/2-DockerLab.md)
 + Kubernetes overview
 + Positioning and Offerings
     + ICp / Icp Hosted / IKS / CAC (MultiCloud)

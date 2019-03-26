@@ -1,5 +1,5 @@
 
-# Practical Container Orchestration 
+# IBM Cloud Container Workshop
 ---
 # Docker Labs
 ---
@@ -713,5 +713,5 @@ Congratulations, you have successfully completed this Containers lab !  You've j
 ---
 # End of the lab
 ---
-# Practical Container Orchestration 
+# IBM Cloud Container Workshop 
 ---

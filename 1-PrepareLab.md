@@ -1,5 +1,5 @@
 
-# Practical Container Orchestration 
+# IBM Cloud Container Workshop
 ---
 # Preparing the labs
 ---
@@ -500,5 +500,5 @@ You finally went thru the following features :
 ---
 # End of the lab
 ---
-# Practical Container Orchestration 
+# IBM Cloud Container Workshop
 ---
