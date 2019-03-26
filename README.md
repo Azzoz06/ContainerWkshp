@@ -1,4 +1,4 @@
-# IBM Container Workshop
+# IBM Cloud Container Workshop
 
 version 1.0
 
