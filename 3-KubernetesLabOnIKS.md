@@ -1,5 +1,5 @@
 
-# Practical Container Orchestration 
+# IBM Cloud Container Workshop
 ---
 # Kubernetes Lab
 ---
@@ -27,7 +27,7 @@ A container is a standard way to package an app and all its dependencies so that
 
 **Image**
 
-Every container is based on a Docker image and is considered to be an instance of an image. An image is built from a Dockerfile, which is a file that contains instructions how to build the image, and any build artifacts, such as an app, the app's configuration, and its dependencies.
+Every container is based on a Docker image and is considered to be an instance of an image. An image is built from a Dockerfile, which is a file that contains instructions how to build the image, and any build artifacts, such as an app, the app's configuration, and its dependencies.ls -ltr
 
 **Registry**
 
@@ -752,5 +752,5 @@ You have learnt how to create a Kubernetes cluster and see how to configure all 
 
 # End of the lab
 ---
-# Practical Container Orchestration 
+# IBM Cloud Container Workshop
 ---

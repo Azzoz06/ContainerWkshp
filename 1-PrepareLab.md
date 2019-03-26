@@ -8,7 +8,7 @@
 
 
 
-Before you can run all the labs about container orchestration, you should prepare your environment to execute those labs. Check the following instructions.
+Before you can run all the labs about containers in IBM Cloud, you should prepare your environment to execute those labs. Check the following instructions.
 
 
 # Task 1. IBM Cloud registration
