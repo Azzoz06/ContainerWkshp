@@ -1,7 +1,3 @@
----
-typora-copy-images-to: images
----
-
 # IBM Cloud Container Workshop
 
 ![ICP Logo](./images/logoicp.png)

@@ -13,7 +13,7 @@ version 1.0
     + ICp / Icp Hosted / IKS / CAC (MultiCloud)
 + IBM Cloud (Public) Container Service
 + _Kubernetes **Lab** on IKS_
-  + [https://github.com/phthom/ContainerOrchestration/blob/master/3-KubernetesLab.md](https://github.com/phthom/ContainerOrchestration/blob/master/3-KubernetesLab.md)
+  + [https://github.com/Azzoz06/ContainerWkshp/blob/master/3-KubernetesLabOnIKS.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/3-KubernetesLabOnIKS.md)
 + IBM Cloud Private Overview
   +   _Demo_
 + Wrap Up
@@ -21,16 +21,16 @@ version 1.0
 **Day Two**
 + Helm overview
   + _Kubernetes & Helm **Lab** on ICP_
-  + [https://github.com/phthom/icp31/blob/master/2-DockerKubernetesHelm.md](https://github.com/phthom/icp31/blob/master/2-DockerKubernetesHelm.md)
+  + [https://github.com/Azzoz06/ContainerWkshp/blob/master/4-KubernetesHelmOnICP.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/4-KubernetesHelmOnICP.md)
 + Application Patterns
   + MicroServices /Cloud Native Applications
   + Transformation Advisor
   + Devops : CI/CD
 + _DevOps **Lab**_
   + _Jenkins/Microclimate **Labs**_
-  + [https://github.com/phthom/DevOps/blob/master/Microclimate%20and%20Jenkins%20Lab.md](https://github.com/phthom/DevOps/blob/master/Microclimate and Jenkins Lab.md)
+  + [https://github.com/Azzoz06/ContainerWkshp/blob/master/5-Microclimate%20and%20Jenkins%20Lab.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/5-Microclimate%20and%20Jenkins%20Lab.md)
   + _IBM Cloud Toolchain / Pipeline **Demo**_
-  + [https://github.com/phthom/DevOps/blob/master/Toolchain%20Lab.md](https://github.com/phthom/DevOps/blob/master/Toolchain Lab.md)
+  + [https://github.com/Azzoz06/ContainerWkshp/blob/master/6-Toolchain%20Lab.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/6-Toolchain%20Lab.md)
 + Monitoring
   + _**Demos** Prometheus / Grafana_
 + Wrap Up
