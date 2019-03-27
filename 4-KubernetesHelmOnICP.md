@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: images
+---
+
 # IBM Cloud Container Workshop
 
 ![ICP Logo](./images/logoicp.png)
@@ -916,7 +920,7 @@ spec:
 - Look into the deployment and see that the **spec** contains a ReplicaSet (see the `replicas` term) and that the ReplicaSet includes a Pod
 - The Pod is defined as a template that contains the similar structure of metadata and specification
 - The specification of the pod includes an array of containers that refers to an image.
-- The livenessProbe and readinessProbe are checks that the kubernetes system would perform to check pod's health.
+- The livenessProbe and readinessProbe are checks that the kubernetes system would perform to check pod's health. In this example, we have defined a HTTP liveness probe to check health of the container every five seconds. **For the first 10-15 seconds the `/healthz` returns a `200` response and will fail afterward**. Kubernetes will automatically restart the service.
 
 Review the **service's manifest**
 
@@ -1267,17 +1271,20 @@ The helm chart that we created in the previous section that has been verified no
 
 You can use the command line to create a new namespace or you can use the IBM Cloud Private Console to do so:
 - Open a  Web browser from the application launcher
-- Go to `https://mycluster.icp:8443/`
-- Login as `admin` with the password of `admin`
+- Go to `https://<<ipaddress>>:8443/`
+- Login as `admin` with the password of `admin1!`
 - Go to **Menu > Manage**
 
-- Select __Namespaces__ then click __New namespace__
+- Select __Namespaces__ then click __Create namespace__
 
 
 ![Organization menu](images/namespaces.png)
 
-  - Specify the namespace of `training` and click __Add namespace__
-    ![Add namespace](images/newnamespace.png)
+  - Specify the namespace of `training` , select `ibm-anyuid-psp` as Pod Security Policy and click __Create__
+
+    ![1553684355637](images/1553684355637.png)
+
+    
 
 
 ### 2. Install the chart to the training namespace
@@ -1859,3 +1866,5 @@ Don't forget to **exit** from the container:
 `# exit`
 
 ## End of Appendix
+
+# IBM Cloud Container Workshop
