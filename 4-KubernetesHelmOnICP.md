@@ -1,369 +1,313 @@
-![icp000](images/icp000.png)
+# IBM Cloud Container Workshop
 
-
+![ICP Logo](./images/logoicp.png)
 
 ---
+
+
 # Docker, Kubernetes and Helm Lab
+
 ---
 
 This lab is compatible with ICP version 3.1.2
 
 ![image-20181130211541303](images/image-20181130211541303.png)
 
-## Table of Contents
 
 
-- [Prerequisites](#prerequisites)
-- [Task 1 - Building Docker Images](#task-1---building-docker-images)
-    + [1. Our First Dockerfile](#1-our-first-dockerfile)
-    + [2. Web Application](#2-web-application)
-- [Task 2 : Deploying Apps with Kubernetes](#task-2---deploying-apps-with-kubernetes)
-    + [1. Check kubectl](#1-check-kubectl)
-    + [2. Download a GIT repo](#2-download-a-git-repo)
-    + [4. Build a Docker image](#4-build-a-docker-image)
-    + [5. Push the image to the registry](#5-push-the-image-to-the-registry)
-    + [6. View your image in the console](#6-view-your-image-in-the-console)
-    + [7. Run your first deployment](#7-run-your-first-deployment)
-    + [8. Expose your first service](#8-expose-your-first-service)
-    + [9. Identify the NodePort](#9-identify-the-nodeport)
-    + [10. Use the NodePort](#10-use-the-nodeport)
-    + [11. Application troubleshooting](#11-application-troubleshooting)
-- [Task 3 : Scaling Apps with Kubernetes](#task-3---scaling-apps-with-kubernetes)
-    + [1. Clean up the current deployment](#1-clean-up-the-current-deployment)
-    + [2. Run a clean deployment](#2-run-a-clean-deployment)
-    + [3. Scale the application](#3-scale-the-application)
-    + [4. Rollout an update to  the application](#4-rollout-an-update-to--the-application)
-- [Task 4: Understand Kubernetes manifests](#task-4--understand-kubernetes-manifests)
-    + [1. Build a new Docker image](#1-build-a-new-docker-image)
-    + [2. View the image in the registry](#2-view-the-image-in-the-registry)
-    + [3. Analyse a Kubernetes manifest](#3-analyse-a-kubernetes-manifest)
-- [Task 5 : Define a Helm chart](#task-5---define-a-helm-chart)
-    + [1. Check Helm](#1-check-helm)
-    + [2. Create an empty chart directory](#2-create-an-empty-chart-directory)
-    + [3. Check the chart](#3-check-the-chart)
-- [Task 6 : Using Helm](#task-6---using-helm)
-    + [1. Create a new namespace](#1-create-a-new-namespace)
-    + [2. Install the chart to the training namespace](#2-install-the-chart-to-the-training-namespace)
-    + [3. List the releases](#3-list-the-releases)
-    + [4. List the deployments](#4-list-the-deployments)
-    + [5. List the services](#5-list-the-services)
-    + [6. List the pods](#6-list-the-pods)
-    + [7. Upgrade](#7-upgrade)
-    + [8. Define the chart in the ICP Catalog](#8-define-the-chart-in-the-icp-catalog)
-- [Conclusion](#conclusion)
+# IBM Cloud Private Overview
 
+**IBM Cloud Private** is a private cloud platform for developing and running workloads locally. It is an integrated environment that enables you to design, develop, deploy and manage on-premises, containerized cloud applications behind your firewall. It includes the container orchestrator Kubernetes, a private image repository, a management console and monitoring frameworks.
 
+### What is a private Cloud ?
 
-# Prerequisites
-This set of instructions requires that docker is already installed and docker commands can be run from a bash shell. You can get more information at the [Docker website](https://www.docker.com/get-docker)
+ Private cloud is a cloud-computing model run solely for one organization. It can be managed internally or by third party, and can be hosted behind the company firewall or externally. Private cloud offers the benefits of a public cloud, including rapid deployment and scalability plus ease of use and elasticity, but also provides greater control, increased performance, predictable costs, tighter security and flexible management options. Customize it to your unique needs and security requirements.
 
-Before starting, login to the Ubuntu VM as **root**.  
+### Terminology
 
-# Task 1 - Building Docker Images
+- **master node** :  
+  - controls and manages the cluster
+  - **Kubectl**:  command line client
+  - REST API:  used for communicating with the workers
+  - Scheduling and replication logic
+  - Generally 3 or more master nodes for resiliency
+- **worker node**
+  - is a worker machine in Kubernetes, previously known as a minion. A node may be a **VM** or **physical machine**, depending on the cluster. Each node has the services necessary to run pods and is managed by the master components.
+  - **Kubelet**  agent that accepts commands from the master
+  - **Kubeproxy**: network proxy service on a node level, responsible for routing activities for inbound or ingress traffic
+  - Docker host
+- **Containers**: Units of packaging
+- **Pods**:
+  - A collection of containers that run on a worker node
+  - A pod can contain more than one service
+  - Each pod has it’s own IP
+  - A pod shares a PID namespace, network, and hostname
+- **Replication Controller**:
+  - Ensures availability and scalability
+  - Responsible for maintaining as many pods as requested by the user
+  - Uses a template that describes specifically what each pod should contain
+- **Labels**:
+  - Metadata assigned to K8 resources – such as pods, services
+  - Key-Value pairs for identification
+  - Critical to K8s as it relies on querying the cluster for resources that have certain labels
+- **Services:**
+  - Collection of pods exposed as an endpoint
+  - Information stored in the K8 cluster state and networking info propagated to all worker nodes
+- **Secrets**:
+  - Sensitive information that containers need to read or consume
+  - Are special volumes mounted automatically so that the containers can read its contents
+  - Each entry has it’s own path
 
-Type the following command and you will see both the client (CLI) and the server (engine).
+### Architecture
 
-`docker version`
+See below a global picture showing ICP architecture and most common components.
+
+![Architecture](../../../../IBM%202019/ContainersWorkshop/sources/icp31/images/architecture.png)
+
+This lab is going to focus on "Docker / Kubernetes / Helm" which are the main foundation of IBM Cloud Private. 
+
+In this lab, all nodes will be part of a single VM.
+
+## TASK 1 : Check your ICP installation
+
+Using Terraform ( see [https://developer.ibm.com/recipes/tutorials/infrastructure-automation-with-terraform-on-ibm-cloud-iaas/](https://developer.ibm.com/recipes/tutorials/infrastructure-automation-with-terraform-on-ibm-cloud-iaas/) ), we instantiated for you a **virtual server** (16CPU - 32GB RAM - 400GB Disk - 1GB Network speed - Ubuntu 16.04.5 LTS) on IBM Cloud infrastructure (IaaS).
+
+We already have installed **ICP 3.1.2** on it. If you want to have more information on the ICP installation, have a look at : [https://github.com/phthom/icp31/blob/master/1-Installation.md](https://github.com/phthom/icp31/blob/master/1-Installation.md)
+
+You will need **ssh** (or **putty**  ( https://www.putty.org/ )) to access this VM using the **IP address and the root password** the instructors gave you.
+
+From your web browser, go the following address where *ipaddress* is the IP your instructor gave you :
+
+`https://ipaddress:8443`  
+
+![Loginicp](images/loginicp.png)
+
+You should receive the **Welcome Page**:
+
+![Welcome to ICP](/images/Welcome.png)
+
+Click on the **Catalog** menu (top right) to look at the list of applications already installed:
+
+![Menu](images/Hamburger.png)
+
+The **Catalog** shows Charts that you can visit (it could take au few seconds to refresh the first time)
+
+You can look at the (helm) catalog and visit some entries (but don't create any application at the moment).
+
+### Kubernetes command line tool : KUBECTL
+
+We now need to configure kubectl to get access to the cluster. An alternative method can be used (see Appendix A : How to get connected to the cluster) if you are interested.
+
+On the provided virtual server, we are using a **script** created for you to help to connect to the cluster
+
+Run : 
+
+`cat ~/connect2icp.sh`
+
+and look at the following code :
+
+```console
+CLUSTERNAME=mycluster
+ACCESS_IP=`curl ifconfig.co`
+USERNAME=admin
+PASSWD=admin1!
+
+token=$(curl -s -k -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=$USERNAME&password=$PASSWD&scope=openid" https://$ACCESS_IP:8443/idprovider/v1/auth/identitytoken --insecure | jq .id_token | awk  -F '"' '{print $2}')
+
+kubectl config set-cluster $CLUSTERNAME.icp --server=https://$ACCESS_IP:8001 --insecure-skip-tls-verify=true
+kubectl config set-context $CLUSTERNAME.icp-context --cluster=$CLUSTERNAME.icp
+kubectl config set-credentials admin --token=$token
+kubectl config set-context $CLUSTERNAME.icp-context --user=admin --namespace=default
+kubectl config use-context $CLUSTERNAME.icp-context
+```
+
+> These lines in that script are getting a token automatically for you. But every 12 hours, the token expires and you will need to type that script (connect2icp.sh) again. 
+
+Then execute that shell program :
+
+`~/connect2icp.sh`
+
+Results :
+
+```console
+# ~/connect2icp.sh
+Cluster "cluster.local" set.
+Context "cluster.local-context" modified.
+User "admin" set.
+Context "cluster.local-context" modified.
+Switched to context "cluster.local-context".
+```
+
+As a result, you will see that you are now **connected** for **12 hours** to the cluster (with only one node):
+
+`kubectl version --short`
+
+Results :
+
+```console
+# kubectl version --short
+Client Version: v1.12.3
+Server Version: v1.12.3+icp
+```
+
+Try this command to show all the worker nodes :
+
+`kubectl get nodes`
+
+Results :
+
+```console
+# kubectl get nodes
+NAME            STATUS    ROLES     AGE       VERSION
+169.50.200.70   Ready     etcd,management,master,proxy,worker   35m       v1.12.3+icp
+```
+
+> After a long period of inactivity, if you see some connection error when typing a kubectl command then re-execute the `~/connect2icp.sh` command.
+
+To get help from the kubectl, just type this command:
+
+`kubectl`
+
+### ICP Command line tool : cloudctl
+
+This command can be used to configure and manage IBM Cloud Private. We have also installed the **cloudctl** command on the virtual server you will use.
+
+If you need to install cloudctl, type the following curl command : (don't forget to change the ipaddress):
+
+`curl -kLo cloudctl-linux-amd64-3.1.2-1203 https://ipaddress:8443/api/cli/cloudctl-linux-amd64`
 
 Results:
 
-```
-# docker version
-Client:
- Version:      18.03.1-ce
- API version:  1.37
- Go version:   go1.9.5
- Git commit:   9ee9f40
- Built:        Thu Apr 26 07:17:20 2018
- OS/Arch:      linux/amd64
- Experimental: false
- Orchestrator: swarm
-
-Server:
- Engine:
-  Version:      18.03.1-ce
-  API version:  1.37 (minimum version 1.12)
-  Go version:   go1.9.5
-  Git commit:   9ee9f40
-  Built:        Thu Apr 26 07:15:30 2018
-  OS/Arch:      linux/amd64
-  Experimental: false
+```console 
+curl -kLo cloudctl-linux-amd64-3.1.0-715 https://169.50.200.70:8443/api/cli/cloudctl-linux-amd64
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 13.9M  100 13.9M    0     0  38.4M      0 --:--:-- --:--:-- --:--:-- 38.4M
 
 ```
 
-
-
-A Dockerfile is a text file that has a series of instructions on how to build your image. It supports a simple set of commands that you need to use in your Dockerfile. There are several commands supported like FROM, CMD, ENTRYPOINT, VOLUME, ENV and more. We shall look at some of them.
-
-Let us first start with the the overall flow, which goes something like this:
-
-1. You create a Dockerfile with the required instructions.
-2. Then you will use the docker build command to create a Docker image based on the Dockerfile that you created in step 1.
-
-With this information, let us get going.
-
-### 1. Our First Dockerfile
-
-First let's create a directory:
-
-`mkdir images`
-
-`cd images`
-
-`nano Dockerfile`
-
-Now type the following 2 lines:
+Now execute the following commands to change cloudctl to executable and to move that CLI to the right directory :
 
 ```
-FROM busybox:latest
-MAINTAINER yourname
+chmod 755 /root/cloudctl-linux-amd64-3.1.2-1203
+mv /root/cloudctl-linux-amd64-3.1.2-1203 /usr/local/bin/cloudctl
 ```
 
-Replace **yourname** with your name. 
+Execute the **cloudctl** command for the first time 
 
-Since, a Docker image is nothing but a series of layers built on top of each other, we start with a base image. The FROM command sets the base image for the rest of the instructions. The MAINTAINER command tells who is the author of the generated images. This is a good practice. You could have taken any other base image in the FROM instruction too, for e.g. ubuntu:latest or ubunt:14.04, etc.
+`cloudctl`
 
-Now, save the file and come back to the prompt (ctrl O, enter, ctrl X).
+Results:
 
-Execute the following in the /images folder as shown below (don't forget the dot at the end):
+```console 
+# cloudctl
+NAME:
+   cloudctl - A command line tool to interact with IBM Cloud Private
 
-`docker build -t myimage:latest .`
+USAGE:
+[environment variables] cloudctl [global options] command [arguments...] [command options]
 
-Result: 
-``` console
-# docker build -t myimage:latest .
-Sending build context to Docker daemon  2.048kB
-Step 1/2 : FROM busybox:latest
- ---> 8ac48589692a
-Step 2/2 : MAINTAINER Phil
- ---> Using cache
- ---> 992cc1bd4bda
-Successfully built 992cc1bd4bda
-Successfully tagged myimage:latest
+VERSION:
+   3.1.0-715+e4d4ee1d28cc2a588dabc0f54067841ad6c36ec9
+
+COMMANDS:
+   api       View the API endpoint and API version for the service.
+   catalog   Manage catalog
+   cm        Manage cluster
+   config    Write default values to the config
+   iam       Manage identities and access to resources
+   login     Log user in.
+   logout    Log user out.
+   plugin    Manage plugins
+   pm        Manage passwords
+   target    Set or view the targeted namespace
+   tokens    Display the oauth tokens for the current session. Run cloudctl login to retrieve the tokens.
+   version   Check cli and api version compatibility
+   help      
+   
+Enter 'cloudctl help [command]' for more information about a command.
+
+ENVIRONMENT VARIABLES:
+   CLOUDCTL_COLOR=false                     Do not colorize output
+   CLOUDCTL_HOME=path/to/dir                Path to config directory
+   CLOUDCTL_TRACE=true                      Print API request diagnostics to stdout
+   CLOUDCTL_TRACE=path/to/trace.log         Append API request diagnostics to a log file
+
+GLOBAL OPTIONS:
+   --help, -h                         Show help
+
 ```
-This command is used to build a Docker image. The parameters that we have passed are:
 
-- -t is the Docker image tag. You can give a name to your image and a tag.
-- The second parameter (.) specifies the location of the Dockerfile that we created. Since we created the Dockerfile in the same folder in which we are running the docker build, we specified the current directory.
 
-Notice the various steps that the build process goes through to build out your image.
 
-If you run a docker images command now, you will see the myimage image listed in the output as shown below:
+Before using the **cloudctl** with the master, you must login to the master:
 
-`docker images myimage`
+`cloudctl login -a https://mycluster.icp:8443 --skip-ssl-validation`
+
+> For the login : admin/admin1!
 
 ```console
-# docker images myimage
-REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-myimage             latest              992cc1bd4bda        6 hours ago         1.15MB
+# cloudctl login -a https://mycluster.icp:8443 --skip-ssl-validation
+
+Username> admin
+
+Password> 
+Authenticating...
+OK
+
+Select an account:
+1. mycluster Account (id-mycluster-account)
+Enter a number> 1
+Targeted account mycluster Account (id-mycluster-account)
+
+Select a namespace:
+1. cert-manager
+2. default
+3. istio-system
+4. kube-public
+5. kube-system
+6. platform
+7. services
+Enter a number> 2
+Targeted namespace default
+
+Configuring kubectl ...
+Property "clusters.mycluster" unset.
+Property "users.mycluster-user" unset.
+Property "contexts.mycluster-context" unset.
+Cluster "mycluster" set.
+User "mycluster-user" set.
+Context "mycluster-context" created.
+Switched to context "mycluster-context".
+OK
+
+Configuring helm: /root/.helm
+OK
+
 ```
 
-You can now launch a container, any time via the standard docker run command:
+With that **cloudctl cm** CLI, you can manage the infrastructure part of the cluster like adding new worker nodes (machine-type-add, worker-add) and so on.
 
-`docker run -it myimage`
+Then you can type some commands concerning your cluster:
+
+`cloudctl cm masters mycluster`
+
+Results
 
 ```console
-# docker run -it myimage
-/ # ls
-bin   dev   etc   home  proc  root  sys   tmp   usr   var
-/ # ps
-PID   USER     TIME  COMMAND
-    1 root      0:00 sh
-    8 root      0:00 ps
-/ # exit
+# cloudctl cm masters mycluster
+ID             Private IP      Machine Type   State   
+mycluster-m1   169.50.200.70   -              deployed 
 ```
 
-With the **-it** options, we can get into the myimage shell. And you can use any shell commands like ls or ps. Type *exit* to come back to the Ubuntu shell.
+Among all sub-commands in **cloudctl**, there are some commands to manage the infrastructure components like :
 
-`nano Dockerfile`
+- cluster
+- workers (adding, removing ...)
+- registry (docker image management )
+- helm repositories
 
-```
-FROM busybox:latest
-MAINTAINER yourname
-CMD ["date"]
-```
-
-Then **build** and run the myimage container:
-
-```console
-# docker run myimage
-Mon Apr 16 12:44:10 UTC 2018
-```
-
-
-The CMD instruction takes various forms and when it is used individually in the file without the ENTRYPOINT command (which we will see in a while), it takes the following format:
-
-`CMD ["executable","param1","param2"]`
-
-So in our case, we provided the date command as the executable and when we ran a container based on the myimage now, it printed out the data.
-
-In fact, while launching the container, you can override the default CMD by providing it at the command line as shown below. In this example, we are saying to launch the shell , thereby overriding the default CMD instruction for the Docker Image. Notice that it will lead us into the shell.
-
-Change your Dockerfile to the following:
-
-```
-FROM busybox
-MAINTAINER myname
-ENTRYPOINT ["/bin/cat"]
-CMD ["/etc/passwd"]
-```
-
-Save, **Build** and re-reun myimage. 
-
-```console
-# docker run -it myimage
-root:x:0:0:root:/root:/bin/sh
-daemon:x:1:1:daemon:/usr/sbin:/bin/false
-bin:x:2:2:bin:/bin:/bin/false
-sys:x:3:3:sys:/dev:/bin/false
-sync:x:4:100:sync:/bin:/bin/sync
-mail:x:8:8:mail:/var/spool/mail:/bin/false
-www-data:x:33:33:www-data:/var/www:/bin/false
-operator:x:37:37:Operator:/var:/bin/false
-nobody:x:65534:65534:nobody:/home:/bin/false
-```
-
-If it doesn't work, did you build the image ?
-
-### 2. Web Application
-
-Now, let us look at another Dockerfile shown below:
-
-```
-FROM ubuntu
-MAINTAINER Philippe
-RUN apt-get update
-RUN apt-get install -y nginx
-ENTRYPOINT ["/usr/sbin/nginx","-g","daemon off;"]
-EXPOSE 80
-```
-
-Here, what we are building is an image that will run the nginx proxy server for us. Look at the set of instructions and it should be pretty clear. After the standard FROM and MAINTAINER instructions, we are executing a couple of RUN instructions. A RUN instruction is used to execute any commands during the **build** process. In this case we are running a package update and then installing nginx. The ENTRYPOINT is then running the nginx executable and we are using the EXPOSE command here to inform what port the container will be listening on. Remember in our earlier chapters, we saw that if we use the -P command, then the EXPOSE port will be used by default. However, you can always change the host port via the -p parameter as needed.
-
-Here are the steps:
-
-`cd`
-
-`mkdir webapp`
-
-`cd webapp`
-
-`nano Dockerfile`
-
-Now copy and paste the Dockerfile text (see above). Save the file.
-
-`docker build . -t myimage:latest`
-
-`docker run -d -p 8081:80 --name webserver myimage`
-
-> In the -p parameter, the 8081 port will be the one used from outside the container.
-
-`curl http://ipaddress:8081`
-
-Results :
-```console
-# curl http://159.122.2.109:8081
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-```
-
-Or you can also open a browser on your laptop and type :
-
-http://ipaddress:8081/ 
-
-You should see :
-
-![NGINX](./images/nginx2.png)  
-
-
-
-To **troubleshoot** your application, you may want to go inside the container to look at some logs or to see the processes.
-
-`docker exec -it webserver "/bin/bash"`
-
-> -it : this concerns the interation with the container by using a bash shell
->
-> A prompt with the container id will be returned to you : **root@cc88b7536a57:/#**
->
-> You can then type any kind of linux commands
-
-Output:
-
-```console
-# docker exec -it webserver "/bin/bash"
-root@cc88b7536a57:/# 
-root@cc88b7536a57:/# 
-root@cc88b7536a57:/# ll
-total 72
-drwxr-xr-x   1 root root 4096 Nov 30 14:59 ./
-drwxr-xr-x   1 root root 4096 Nov 30 14:59 ../
--rwxr-xr-x   1 root root    0 Nov 30 14:59 .dockerenv*
-drwxr-xr-x   1 root root 4096 Nov 30 14:58 bin/
-drwxr-xr-x   2 root root 4096 Apr 24  2018 boot/
-drwxr-xr-x   5 root root  340 Nov 30 14:59 dev/
-drwxr-xr-x   1 root root 4096 Nov 30 14:59 etc/
-drwxr-xr-x   2 root root 4096 Apr 24  2018 home/
-drwxr-xr-x   1 root root 4096 Nov 12 20:54 lib/
-drwxr-xr-x   2 root root 4096 Nov 12 20:55 lib64/
-drwxr-xr-x   2 root root 4096 Nov 12 20:54 media/
-drwxr-xr-x   2 root root 4096 Nov 12 20:54 mnt/
-drwxr-xr-x   2 root root 4096 Nov 12 20:54 opt/
-dr-xr-xr-x 580 root root    0 Nov 30 14:59 proc/
-drwx------   2 root root 4096 Nov 12 20:56 root/
-drwxr-xr-x   1 root root 4096 Nov 30 14:59 run/
-drwxr-xr-x   1 root root 4096 Nov 30 14:58 sbin/
-drwxr-xr-x   2 root root 4096 Nov 12 20:54 srv/
-dr-xr-xr-x  13 root root    0 Nov 30 14:59 sys/
-drwxrwxrwt   1 root root 4096 Nov 30 14:58 tmp/
-drwxr-xr-x   1 root root 4096 Nov 12 20:54 usr/
-drwxr-xr-x   1 root root 4096 Nov 30 14:58 var/
-root@cc88b7536a57:/# ps -ef
-UID        PID  PPID  C STIME TTY          TIME CMD
-root         1     0  0 14:59 ?        00:00:00 nginx: master process /usr/sbin/
-www-data     7     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data     8     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data     9     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data    10     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data    11     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data    12     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data    13     1  0 14:59 ?        00:00:00 nginx: worker process
-www-data    14     1  0 14:59 ?        00:00:00 nginx: worker process
-root        15     0  0 15:03 pts/0    00:00:00 /bin/bash
-root        27    15  0 15:03 pts/0    00:00:00 ps -ef
-```
-
-
-
-Don't forget to **exit** from the container:
-
-`# exit`
-
-
-
-# Task 2 : Deploying Apps with Kubernetes
-
-
+# Task 1 : Deploying Apps on ICP with Kubernetes
 
 ### 1. Check kubectl 
 
@@ -475,7 +419,7 @@ To see the image, use the command:
 
 ### 5. Push the image to the registry
 
-Log in as user `admin` with password `admin`.
+Log in as user `admin` with password `admin1!`.
 
 `docker login mycluster.icp:8500`
 
@@ -500,7 +444,7 @@ latest: digest: sha256:019a5da27d6ed2a58fab45669707daf89932da7c2bc13072c41ed4fb3
 
 Open a browser to https://ipaddress:8443. 
 
-Change the ip address depending on you hosts file. Create a security exception in your browser for this location and if necessary, click on the `Advanced` link and follow the prompts. Log in as user `admin` with password `admin`. 
+Change the *ipaddress* depending on you hosts file. Create a security exception in your browser for this location and if necessary, click on the `Advanced` link and follow the prompts. Log in as user `admin` with password `admin1!`. 
 
 View your image using `Menu > Container Images`
 
@@ -517,6 +461,7 @@ Results:
 
 ```
 # kubectl run hello-world-deployment --image=mycluster.icp:8500/default/hello-world
+kubectl run --generator=deployment/apps.v1beta1 is DEPRECATED and will be removed in a future version. Use kubectl create instead.
 deployment.apps/hello-world-deployment created
 ```
 
@@ -579,7 +524,9 @@ Open a web browser window and go to the URL of your master node with your NodePo
 
 ### 11. Application troubleshooting 
 
-You can view much of the information on your cluster resources visually through the IBM Cloud Private console, similar to information you might have viewed in the Kubernetes Dashboard. That is the subject of our next demo. As an alternative, you can obtain text-based information on all the resources running in your cluster using the following command.
+> You can view much of the information on your cluster resources visually through the **IBM Cloud Private console**, similar to information you might have viewed in the Kubernetes Dashboard. 
+
+As an alternative, you can obtain text-based information on all the resources running in your cluster using the following command.
 
 `kubectl get pods`
 
@@ -667,6 +614,7 @@ To do so, use the 2 following commands :
 - To remove the deployment, use:
 
 `kubectl delete deployment hello-world-deployment`
+
 - To remove the service, use: 
 
 `kubectl delete service hello-world-service`
@@ -816,6 +764,8 @@ Create a new service:
 `kubectl expose deployment/hello-world --type=NodePort --port=8080 --name=hello-world-service --target-port=8080`
 
 Take a note of the NodePort in the description. The NodePord is working against the public IP address of the worker node (in this case this is our unique **ipaddress**)
+
+(Reminder : use `kubectl describe service` )
 
 Perform a curl `http://ipaddress:<nodeport>` to confirm your new code is active or open a browser and you see "Great Job for the second stage".
 
@@ -989,7 +939,47 @@ spec:
 ```
 
 - The service defines the accessibility of a pod. This service is of type NodePort, which exposes an internal Port (8080) into an externally accessible nodePort through the proxy node (here port 30072)
+
 - How does a service know which pod are associated with it?  From the selector(s) that would select all pods with the same label(s) to be load balanced.
+
+  #### Deploying resources to ICP
+
+- To deploy these resources check that the image is in the ICP registry :
+
+  `docker images mycluster.icp:8500/default/*`
+
+  ```bash
+  root@iccws101:~/container-service-getting-started-wt/Lab 2# docker images mycluster.icp:8500/default/*
+  REPOSITORY                               TAG                 IMAGE ID            CREATED             SIZE
+  mycluster.icp:8500/default/hello-world   2                   06f027127421        18 hours ago        78.1MB
+  mycluster.icp:8500/default/hello-world   latest              674fafe34038        18 hours ago        78.1MB
+  ```
+
+- To check if the image has been pushed to ICP private registry ,  go to `https://<<ipaddress>>:8443/console/images/default%2Fhello-world`
+
+  
+
+  ![1553681785444](images/1553681785444.png)
+
+  (if version 2 is not present, run  `docker push mycluster.icp:8500/default/hello-world:2`)
+
+- Create Kubernetes resources using the yaml configuration file and the following command (using **kubectl apply** is used to create and/or update resources) :
+
+  `kubectl apply -f healthcheck.yml`
+
+  ```bash
+  root@iccws101:~/container-service-getting-started-wt/Lab 2# kubectl apply -f healthcheck.yml
+  deployment.apps/hw-demo-deployment created
+  service/hw-demo-service created
+  ```
+
+- Go to  `https://<<ipaddress>>:8443/console/workloads/deployments`  (all columns must show 3) 
+
+  ![1553682422885](images/1553682422885.png)
+
+- click on **Launch** link to check the application has been successfully deployed
+
+![1553682535675](images/1553682535675.png)
 
 # Task 5 : Define a Helm chart
 
@@ -1008,7 +998,80 @@ Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"843201eceab24e7102ebb87
 
 ```
 
-> If you don't see the client and servers numbers or an error, then go back to the installation lab.
+> If you don't see the client and servers numbers or an error, then proceed to the helm installation.
+
+### Installing helm
+
+Helm is a client/server application : Helm client and Tiller server.
+Before we can run any chart with helm, we should proceed to some installation and configuration.
+
+Download the Helm client:
+
+```console
+cd
+curl -O https://storage.googleapis.com/kubernetes-helm/helm-v2.9.1-linux-amd64.tar.gz
+tar -vxhf helm-v2.9.1-linux-amd64.tar.gz
+export PATH=/root/linux-amd64:$PATH
+```
+
+Then set an environment variable:
+
+```console
+export HELM_HOME=/root/.helm
+```
+
+You should Initialize Helm
+
+`helm init --client-only`
+
+Results:
+
+```console
+# helm init --client-only
+Creating /root/.helm/repository
+Creating /root/.helm/repository/cache
+Creating /root/.helm/repository/local
+Creating /root/.helm/plugins
+Creating /root/.helm/starters
+Creating /root/.helm/cache/archive
+Creating /root/.helm/repository/repositories.yaml
+Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com
+Adding local repo with URL: http://127.0.0.1:8879/charts
+$HELM_HOME has been configured at /root/.helm.
+Not installing Tiller due to 'client-only' flag having been set
+Happy Helming!
+
+```
+
+After you have initialize helm client. Try the following command to see the version:
+
+`helm version --tls`
+
+Results:
+
+```console 
+# helm version --tls
+Client: &version.Version{SemVer:"v2.9.1", GitCommit:"20adb27c7c5868466912eebdf6664e7390ebe710", GitTreeState:"clean"}
+Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"843201eceab24e7102ebb87cb00d82bc973d84a7", GitTreeState:"clean"}
+
+```
+
+> The helm Client and server should be the same version (i.e. **version 2.9.1**)
+> If you get some X509 error the also type that command: `cp ~/.kube/mycluster/*.pem ~/.helm/`
+
+Another important step is to access to the ICP container registry.
+
+To do so,  login to the private registry:
+
+`docker login mycluster.icp:8500 -u admin -p admin1!`
+
+Results:
+
+```console
+# docker login mycluster.icp:8500 -u admin -p admin1!
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+Login Succeeded
+```
 
 
 
@@ -1442,6 +1505,377 @@ Of course, you can customize the README.MD and add an icon to make the chart mor
 
 Congratulations, you have successfully completed this Containers lab ! You've deployed a few Docker-based web applications on IBM Cloud Private!  In this lab, you learned how to tag and push local images to ICP, inspect pushed images in Kubernetes cluster, deployed different versions of an application and run Helm install to simplify the deployment of multiple kubernetes artifacts.
 
+------
+
+## End of Lab
+
 ---
 
-![icp000](images/icp000.png)
+# appendix A - How to connect to a cluster
+
+You need to setup the endpoint to tell the kubectl command where is the ICP Cluster and what are the correct certificates.
+To do so, go to the ICP console and select your profile on the right hand:
+
+![Configure Client](../../../../IBM%202019/ContainersWorkshop/sources/icp31/images/Client.png)
+
+Click on Configure client:
+
+![Configure Client](../../../../IBM%202019/ContainersWorkshop/sources/icp31/images/ClientSetup.png)
+
+These 5 lines contain a token that change every **12 hours**. So then, you generally have to use these 5 commands to get connected.
+
+A **connect2icp.sh** script is provided to avoid this problem. 
+
+# appendix B : Changing ICP admin password
+
+This tutorial describes how to change the admin password.
+
+> ATTENTION : This procedure could be dangerous - Knowing **vi** is a prerequisite.
+
+### 1. Login to your ICP cluster using ssh
+
+`ssh root@ipaddress`
+
+### 2. Generate your new ICP password in base64
+
+`echo -n "MyNewPassword"| base64`
+
+Results :
+
+```console
+ # echo -n "MyNewPassword"| base64
+TXlOZXdQYXNzd29yZA==
+```
+
+> Attention choose a very specific password to your ICP (containing capital letters and numbers and special characters ...)
+> **Take a note of the  encrypted password**
+
+### 3. Edit ICP secrets
+
+`kubectl -n kube-system edit secrets platform-auth-idp-credentials`
+
+Results :
+
+```console
+# kubectl -n kube-system edit secrets platform-auth-idp-credentials
+error: You must be logged in to the server (Unauthorized)
+```
+
+> If you see that message then use the ./connect2icp.sh to reconnect to the cluster.
+
+`kubectl -n kube-system edit secrets platform-auth-idp-credentials`
+
+Results :
+
+![visecrets](../../../../IBM%202019/ContainersWorkshop/sources/icp31/images/visecrets.png)
+
+
+
+This command opens up the **vi** text editor on the secrets file.
+Locate the **admin-password** and change the existing encrypted password with the one that you generated.
+Don't change anything else in the file.
+Save your work : **escape  :wq**
+
+# appendix C - Building Docker Images
+
+Type the following command and you will see both the client (CLI) and the server (engine).
+
+`docker version`
+
+Results:
+
+```
+# docker version
+Client:
+ Version:      18.03.1-ce
+ API version:  1.37
+ Go version:   go1.9.5
+ Git commit:   9ee9f40
+ Built:        Thu Apr 26 07:17:20 2018
+ OS/Arch:      linux/amd64
+ Experimental: false
+ Orchestrator: swarm
+
+Server:
+ Engine:
+  Version:      18.03.1-ce
+  API version:  1.37 (minimum version 1.12)
+  Go version:   go1.9.5
+  Git commit:   9ee9f40
+  Built:        Thu Apr 26 07:15:30 2018
+  OS/Arch:      linux/amd64
+  Experimental: false
+
+```
+
+
+
+A Dockerfile is a text file that has a series of instructions on how to build your image. It supports a simple set of commands that you need to use in your Dockerfile. There are several commands supported like FROM, CMD, ENTRYPOINT, VOLUME, ENV and more. We shall look at some of them.
+
+Let us first start with the the overall flow, which goes something like this:
+
+1. You create a Dockerfile with the required instructions.
+2. Then you will use the docker build command to create a Docker image based on the Dockerfile that you created in step 1.
+
+With this information, let us get going.
+
+### 1. Our First Dockerfile
+
+First let's create a directory:
+
+`mkdir images`
+
+`cd images`
+
+`nano Dockerfile`
+
+Now type the following 2 lines:
+
+```
+FROM busybox:latest
+MAINTAINER yourname
+```
+
+Replace **yourname** with your name. 
+
+Since, a Docker image is nothing but a series of layers built on top of each other, we start with a base image. The FROM command sets the base image for the rest of the instructions. The MAINTAINER command tells who is the author of the generated images. This is a good practice. You could have taken any other base image in the FROM instruction too, for e.g. ubuntu:latest or ubunt:14.04, etc.
+
+Now, save the file and come back to the prompt (ctrl O, enter, ctrl X).
+
+Execute the following in the /images folder as shown below (don't forget the dot at the end):
+
+`docker build -t myimage:latest .`
+
+Result: 
+
+```console
+# docker build -t myimage:latest .
+Sending build context to Docker daemon  2.048kB
+Step 1/2 : FROM busybox:latest
+ ---> 8ac48589692a
+Step 2/2 : MAINTAINER Phil
+ ---> Using cache
+ ---> 992cc1bd4bda
+Successfully built 992cc1bd4bda
+Successfully tagged myimage:latest
+```
+
+This command is used to build a Docker image. The parameters that we have passed are:
+
+- -t is the Docker image tag. You can give a name to your image and a tag.
+- The second parameter (.) specifies the location of the Dockerfile that we created. Since we created the Dockerfile in the same folder in which we are running the docker build, we specified the current directory.
+
+Notice the various steps that the build process goes through to build out your image.
+
+If you run a docker images command now, you will see the myimage image listed in the output as shown below:
+
+`docker images myimage`
+
+```console
+# docker images myimage
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+myimage             latest              992cc1bd4bda        6 hours ago         1.15MB
+```
+
+You can now launch a container, any time via the standard docker run command:
+
+`docker run -it myimage`
+
+```console
+# docker run -it myimage
+/ # ls
+bin   dev   etc   home  proc  root  sys   tmp   usr   var
+/ # ps
+PID   USER     TIME  COMMAND
+    1 root      0:00 sh
+    8 root      0:00 ps
+/ # exit
+```
+
+With the **-it** options, we can get into the myimage shell. And you can use any shell commands like ls or ps. Type *exit* to come back to the Ubuntu shell.
+
+`nano Dockerfile`
+
+```
+FROM busybox:latest
+MAINTAINER yourname
+CMD ["date"]
+```
+
+Then **build** and run the myimage container:
+
+```console
+# docker run myimage
+Mon Apr 16 12:44:10 UTC 2018
+```
+
+The CMD instruction takes various forms and when it is used individually in the file without the ENTRYPOINT command (which we will see in a while), it takes the following format:
+
+`CMD ["executable","param1","param2"]`
+
+So in our case, we provided the date command as the executable and when we ran a container based on the myimage now, it printed out the data.
+
+In fact, while launching the container, you can override the default CMD by providing it at the command line as shown below. In this example, we are saying to launch the shell , thereby overriding the default CMD instruction for the Docker Image. Notice that it will lead us into the shell.
+
+Change your Dockerfile to the following:
+
+```
+FROM busybox
+MAINTAINER myname
+ENTRYPOINT ["/bin/cat"]
+CMD ["/etc/passwd"]
+```
+
+Save, **Build** and re-reun myimage. 
+
+```console
+# docker run -it myimage
+root:x:0:0:root:/root:/bin/sh
+daemon:x:1:1:daemon:/usr/sbin:/bin/false
+bin:x:2:2:bin:/bin:/bin/false
+sys:x:3:3:sys:/dev:/bin/false
+sync:x:4:100:sync:/bin:/bin/sync
+mail:x:8:8:mail:/var/spool/mail:/bin/false
+www-data:x:33:33:www-data:/var/www:/bin/false
+operator:x:37:37:Operator:/var:/bin/false
+nobody:x:65534:65534:nobody:/home:/bin/false
+```
+
+If it doesn't work, did you build the image ?
+
+### 2. Web Application
+
+Now, let us look at another Dockerfile shown below:
+
+```
+FROM ubuntu
+MAINTAINER Philippe
+RUN apt-get update
+RUN apt-get install -y nginx
+ENTRYPOINT ["/usr/sbin/nginx","-g","daemon off;"]
+EXPOSE 80
+```
+
+Here, what we are building is an image that will run the nginx proxy server for us. Look at the set of instructions and it should be pretty clear. After the standard FROM and MAINTAINER instructions, we are executing a couple of RUN instructions. A RUN instruction is used to execute any commands during the **build** process. In this case we are running a package update and then installing nginx. The ENTRYPOINT is then running the nginx executable and we are using the EXPOSE command here to inform what port the container will be listening on. Remember in our earlier chapters, we saw that if we use the -P command, then the EXPOSE port will be used by default. However, you can always change the host port via the -p parameter as needed.
+
+Here are the steps:
+
+`cd`
+
+`mkdir webapp`
+
+`cd webapp`
+
+`nano Dockerfile`
+
+Now copy and paste the Dockerfile text (see above). Save the file.
+
+`docker build . -t myimage:latest`
+
+`docker run -d -p 8081:80 --name webserver myimage`
+
+> In the -p parameter, the 8081 port will be the one used from outside the container.
+
+`curl http://ipaddress:8081`
+
+Results :
+
+```console
+# curl http://159.122.2.109:8081
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+Or you can also open a browser on your laptop and type :
+
+http://ipaddress:8081/ 
+
+You should see :
+
+![NGINX](../../../../IBM%202019/ContainersWorkshop/IBMCloudContainerWorkshop/ContainerWkshp/images/nginx2.png)  
+
+
+
+To **troubleshoot** your application, you may want to go inside the container to look at some logs or to see the processes.
+
+`docker exec -it webserver "/bin/bash"`
+
+> -it : this concerns the interation with the container by using a bash shell
+>
+> A prompt with the container id will be returned to you : **root@cc88b7536a57:/#**
+>
+> You can then type any kind of linux commands
+
+Output:
+
+```console
+# docker exec -it webserver "/bin/bash"
+root@cc88b7536a57:/# 
+root@cc88b7536a57:/# 
+root@cc88b7536a57:/# ll
+total 72
+drwxr-xr-x   1 root root 4096 Nov 30 14:59 ./
+drwxr-xr-x   1 root root 4096 Nov 30 14:59 ../
+-rwxr-xr-x   1 root root    0 Nov 30 14:59 .dockerenv*
+drwxr-xr-x   1 root root 4096 Nov 30 14:58 bin/
+drwxr-xr-x   2 root root 4096 Apr 24  2018 boot/
+drwxr-xr-x   5 root root  340 Nov 30 14:59 dev/
+drwxr-xr-x   1 root root 4096 Nov 30 14:59 etc/
+drwxr-xr-x   2 root root 4096 Apr 24  2018 home/
+drwxr-xr-x   1 root root 4096 Nov 12 20:54 lib/
+drwxr-xr-x   2 root root 4096 Nov 12 20:55 lib64/
+drwxr-xr-x   2 root root 4096 Nov 12 20:54 media/
+drwxr-xr-x   2 root root 4096 Nov 12 20:54 mnt/
+drwxr-xr-x   2 root root 4096 Nov 12 20:54 opt/
+dr-xr-xr-x 580 root root    0 Nov 30 14:59 proc/
+drwx------   2 root root 4096 Nov 12 20:56 root/
+drwxr-xr-x   1 root root 4096 Nov 30 14:59 run/
+drwxr-xr-x   1 root root 4096 Nov 30 14:58 sbin/
+drwxr-xr-x   2 root root 4096 Nov 12 20:54 srv/
+dr-xr-xr-x  13 root root    0 Nov 30 14:59 sys/
+drwxrwxrwt   1 root root 4096 Nov 30 14:58 tmp/
+drwxr-xr-x   1 root root 4096 Nov 12 20:54 usr/
+drwxr-xr-x   1 root root 4096 Nov 30 14:58 var/
+root@cc88b7536a57:/# ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 14:59 ?        00:00:00 nginx: master process /usr/sbin/
+www-data     7     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data     8     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data     9     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data    10     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data    11     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data    12     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data    13     1  0 14:59 ?        00:00:00 nginx: worker process
+www-data    14     1  0 14:59 ?        00:00:00 nginx: worker process
+root        15     0  0 15:03 pts/0    00:00:00 /bin/bash
+root        27    15  0 15:03 pts/0    00:00:00 ps -ef
+```
+
+
+
+Don't forget to **exit** from the container:
+
+`# exit`
+
+## End of Appendix
