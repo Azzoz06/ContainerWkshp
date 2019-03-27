@@ -1,4 +1,4 @@
-
+# IBM Cloud Container Workshop
 
 ---
 # Microclimate and Jenkins Lab
@@ -109,7 +109,7 @@ Notice a few different information on the screen :
 
 - Auto Build : when you change something in your code then you will rebuild automaticaly
 - You can see the Application POD ID
-- The Application URL is also mentionned
+- The Application URL is also mentioned
 - The Run Load button will send some requests to your application so that you can see how it performs
 
 ![image-20190311101816995](images/image-20190311101816995-2295897.png)
@@ -321,6 +321,4 @@ http://ipaddress:30251
 
 You have successfully created and installed a microservice application with Microclimate.
 
-
-
-![icp000](images/icp000.png)
+# IBM Cloud Container Workshop

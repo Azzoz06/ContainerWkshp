@@ -965,11 +965,29 @@ spec:
 
 ![1553682535675](images/1553682535675.png)
 
+After a will, you can see various number for Read and Available columns due to the health check that is failing (on purpose by the application), and growing again to 3 after a while.
+
+Before proceeding to the next step, delete these resources with one single line : 
+
+`kubectl delete -f healthcheck.yml`
+
+```bash
+root@iccws101:~/container-service-getting-started-wt/Lab 2# kubectl delete -f healthcheck.yml
+deployment.apps "hw-demo-deployment" deleted
+service "hw-demo-service" deleted
+```
+
 # Task 5 : Define a Helm chart
 
 Now that you have understood the structure of a kubernetes manifest file, you can start working with helm chart. Basically a helm chart is a collection of manifest files that are deployed as a group. The deployment includes the ability to perform variable substitution based on a configuration file.
 
 ### 1. Check Helm
+
+First retreive kubernetes configuration for ICP : 
+
+`~/connect2icp.sh`
+
+Then check helm version : 
 
 `helm version —tls`
 
@@ -984,7 +1002,7 @@ Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"843201eceab24e7102ebb87
 
 > If you don't see the client and servers numbers or an error, then proceed to the helm installation.
 
-### Installing helm
+### Installing helm (optional if Server )
 
 Helm is a client/server application : Helm client and Tiller server.
 Before we can run any chart with helm, we should proceed to some installation and configuration.
@@ -1284,6 +1302,10 @@ You can use the command line to create a new namespace or you can use the IBM Cl
 
     ![1553684355637](images/1553684355637.png)
 
+    Pod Security Policies enable fine-grained authorization of pod creation and updates. The `PodSecurityPolicy` objects define a set of conditions that a pod must run with in order to be accepted into the system, as well as defaults for the related fields. It is define at cluster level, but can be applied globally or to a specified namespace. 
+
+    In our case, we will allow any user (including root) to run an application in a container. By default, it is restricted to non-root users.
+
     
 
 
@@ -1465,7 +1487,7 @@ Leave the terminal and login to the ICP console with admin/admin :
 
 - Select **Catalog** on the top right side of the ICP console
 
-- Find the `hellonginx` chart from AppCenter
+- Find the `hellonginx` chart from Catalog
 
 ![search hello](images/hellonginx2.png)
 
@@ -1473,7 +1495,7 @@ Leave the terminal and login to the ICP console with admin/admin :
 
 ![hello chart](images/hellonginx3.png)
 
-- Click configure to see the parameters:
+- Click **configure** to see the parameters:
 
 ![hello chart](images/hellonginx4.png)
 
@@ -1482,11 +1504,9 @@ Find and change the **release name**, the **namspace** and the **nodeport** (for
 
 Click **Install** to see the results.
 
-Then check the application is running with `http://ipaddress:nodeport`in your browser.
+Then check the application is running clicking on **Launch** on the next page.
 
 Of course, you can customize the README.MD and add an icon to make the chart more appealing.
-
-
 
 # Conclusion
 
