@@ -939,29 +939,9 @@ spec:
 ```
 
 - The service defines the accessibility of a pod. This service is of type NodePort, which exposes an internal Port (8080) into an externally accessible nodePort through the proxy node (here port 30072)
-
 - How does a service know which pod are associated with it?  From the selector(s) that would select all pods with the same label(s) to be load balanced.
 
-  #### Deploying resources to ICP
-
-- To deploy these resources check that the image is in the ICP registry :
-
-  `docker images mycluster.icp:8500/default/*`
-
-  ```bash
-  root@iccws101:~/container-service-getting-started-wt/Lab 2# docker images mycluster.icp:8500/default/*
-  REPOSITORY                               TAG                 IMAGE ID            CREATED             SIZE
-  mycluster.icp:8500/default/hello-world   2                   06f027127421        18 hours ago        78.1MB
-  mycluster.icp:8500/default/hello-world   latest              674fafe34038        18 hours ago        78.1MB
-  ```
-
-- To check if the image has been pushed to ICP private registry ,  go to `https://<<ipaddress>>:8443/console/images/default%2Fhello-world`
-
-  
-
-  ![1553681785444](images/1553681785444.png)
-
-  (if version 2 is not present, run  `docker push mycluster.icp:8500/default/hello-world:2`)
+### 4. Deploying resources to ICP
 
 - Create Kubernetes resources using the yaml configuration file and the following command (using **kubectl apply** is used to create and/or update resources) :
 
