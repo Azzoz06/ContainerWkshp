@@ -287,11 +287,11 @@ Just like the others, we create a service to group the guestbook pods but this t
 
 Watson Tone Analyzer detects the tone from the words that users enter into the Guestbook app. The tone is converted to the corresponding emoticons.
 
-    1. Install the IBM Cloud [command line interface](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started) to access IBM Cloud public on your virtual server :
+1. Install the IBM Cloud [command line interface](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started) to access IBM Cloud public on your virtual server :
 
        `curl -sL https://ibm.biz/idt-installer | bash`
 
-    2. Log in to the IBM Cloud CLI  using your IBM ID created in [https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md](https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md)
+2. Log in to the IBM Cloud CLI  using your IBM ID created in [https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md](https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md)
 
        ```
        root@iccws101:~/ICPGuestbook# ibmcloud login
@@ -340,7 +340,7 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
 
        
 
-    3. Create Watson Tone Analyzer in your account.
+3. Create Watson Tone Analyzer in your account.
 
        ```
        ibmcloud resource service-instance-create my-tone-analyzer-service tone-analyzer lite us-south
@@ -365,7 +365,7 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
        Updated at:                          2019-03-28T14:16:26Z
        ```
 
-    4. Create the service key for the Tone Analyzer service. This command should output the credentials you just created. You will need the value for **apikey** & **url** later.
+4. Create the service key for the Tone Analyzer service. This command should output the credentials you just created. You will need the value for **apikey** & **url** later.
 
        ```
        ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service
@@ -392,15 +392,15 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
        
        ```
 
-    5. If you need to get the service-keys later, you can use the following command:
+5. If you need to get the service-keys later, you can use the following command:
 
        ```
        ibmcloud resource service-key tone-analyzer-key
        ```
 
-    6. Open the `analyzer-deployment.yaml` and find the env section near the end of the file. Replace `YOUR_API_KEY` with your own API key, and replace `YOUR_URL` with the url value you saved before. YOUR_URL should look something like `https://gateway.watsonplatform.net/tone-analyzer/api`. Save the file.
+6. Open the `analyzer-deployment.yaml` and find the env section near the end of the file. Replace `YOUR_API_KEY` with your own API key, and replace `YOUR_URL` with the url value you saved before. YOUR_URL should look something like `https://gateway.watsonplatform.net/tone-analyzer/api`. Save the file.
 
-    7. Deploy the analyzer pods using the `analyzer-deployment.yaml`  : 
+7. Deploy the analyzer pods using the `analyzer-deployment.yaml`  : 
 
        ```
        root@iccws101:~/ICPGuestbook# kubectl apply -f analyzer-deployment.yaml
@@ -414,7 +414,7 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
        service/analyzer created
        ```
 
-    Great! Your hybrid guestbook application is up and running, accessing Tone 
+Great! Your hybrid guestbook application is up and running, accessing Tone 
 
 ### View the guestbook
 
