@@ -283,7 +283,7 @@ Just like the others, we create a service to group the guestbook pods but this t
 
     Result: The service is created with label `app=guestbook`.
 
-    ### Use Watson Tone Analyzer on IBM Cloud
+### Use Watson Tone Analyzer on IBM Cloud
 
     Watson Tone Analyzer detects the tone from the words that users enter into the Guestbook app. The tone is converted to the corresponding emoticons.
 
