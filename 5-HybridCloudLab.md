@@ -285,7 +285,7 @@ Just like the others, we create a service to group the guestbook pods but this t
 
 ### Use Watson Tone Analyzer on IBM Cloud
 
-    Watson Tone Analyzer detects the tone from the words that users enter into the Guestbook app. The tone is converted to the corresponding emoticons.
+Watson Tone Analyzer detects the tone from the words that users enter into the Guestbook app. The tone is converted to the corresponding emoticons.
 
     1. Install the IBM Cloud [command line interface](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started) to access IBM Cloud public on your virtual server :
 
