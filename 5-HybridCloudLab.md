@@ -15,7 +15,7 @@ The application consists of a web front end, Redis master for storage, and repli
  * [Create the Redis slave service](#create-the-redis-slave-service)
  * [Create the guestbook pods](#create-the-guestbook-pods)
  * [Create the guestbook service](#create-the-guestbook-service)
- * [Use Watson Tone Analyzer on IBM Cloud](#Use Watson Tone Analyzer on IBM Cloud)
+ * [Use Watson Tone Analyzer on IBM Cloud](#use-watson-tone-analyzer-on-ibm-cloud)
  * [View the guestbook](#view-the-guestbook)
  * [Cleanup](#cleanup)
 
