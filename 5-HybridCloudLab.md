@@ -363,34 +363,30 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
    Internal Service Endpoint Enabled:   false
    Created at:                          2019-03-28T14:16:26Z
    Updated at:                          2019-03-28T14:16:26Z
-   ```
   ```
-
-4. Create the service key for the Tone Analyzer service. This command should output the credentials you just created. You will need the value for **apikey** & **url** later.
+Create the service key for the Tone Analyzer service. This command should output the credentials you just created. You will need the value for **apikey** & **url** later.
 
   `ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service`
 
-  ```
-  root@iccws101:~/ICPGuestbook# ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service
-   Creating service key of service instance my-tone-analyzer-service under account ICCWS ICCWS's Account as tufih@mailfavorite.com...
-   AAA: de2d50dd82ac4a19aa30a74a5807afdb
-   OK
-   Service key crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8 was created.
-   
-   Name:          tone-analyzer-key
-   ID:            crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8
-   Created At:    Thu Mar 28 14:17:23 UTC 2019
-   State:         active
-   Credentials:
-                  iam_apikey_name:          auto-generated-apikey-738cecf2-c140-410d-ba68-d4d81658a1b8
-                  iam_role_crn:             crn:v1:bluemix:public:iam::::serviceRole:Manager
-                  iam_serviceid_crn:        crn:v1:bluemix:public:iam-identity::a/95f04fe00e284449bd3990ee72688be3::serviceid:ServiceId-bb3e3496-7a4f-4326-aa07-235774946f6e
-                  url:                      https://gateway.watsonplatform.net/tone-analyzer/api
-                  apikey:                   xxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                  iam_apikey_description:   Auto generated apikey during resource-key operation for Instance - crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0::
-  ```
-
-5. If you need to get the service-keys later, you can use the following command:
+    root@iccws101:~/ICPGuestbook# ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service
+    
+    Creating service key of service instance my-tone-analyzer-service under account ICCWS ICCWS's Account as tufih@mailfavorite.com...
+    AAA: de2d50dd82ac4a19aa30a74a5807afdb
+    OK
+    Service key crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8 was created.
+    
+    Name:          tone-analyzer-key
+    ID:            crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8
+    Created At:    Thu Mar 28 14:17:23 UTC 2019
+    State:         active
+    Credentials:
+                   iam_apikey_name:          auto-generated-apikey-738cecf2-c140-410d-ba68-d4d81658a1b8
+                   iam_role_crn:             crn:v1:bluemix:public:iam::::serviceRole:Manager
+                   iam_serviceid_crn:        crn:v1:bluemix:public:iam-identity::a/95f04fe00e284449bd3990ee72688be3::serviceid:ServiceId-bb3e3496-7a4f-4326-aa07-235774946f6e
+                   url:                      https://gateway.watsonplatform.net/tone-analyzer/api
+                   apikey:                   xxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                   iam_apikey_description:   Auto generated apikey during resource-key operation for Instance - crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0::
+5. if you need to get the service-keys later, you can use the following command:
 
       ibmcloud resource service-key tone-analyzer-key
 
@@ -402,26 +398,25 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
 
     `kubectl create secret generic wta-apikey --from-file=./wta-apikey`
 
-  - Create ConfigMap containing Environment variable
+  - Create ConfigMap containing Environment variable. Create ibmcloud.env file containing the environment variable to access Watson Tone Analyzer service.
 
-  ```
-  nano ibmcloud.env
-  ```
+     `nano ibmcloud.env`
 
-  ```
+```
   VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS=https://iam.bluemix.net/identity/token
   VCAP_SERVICES_TONE_ANALYZER_SERVICE_API=YOUR_URL
+```
+
+​		Hit `CTRL-O`, `Enter`, `CTRL-X ` to save the file.
+
+​	Then create the config map using the following command :
+
+​	`kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env`
+
   ```
-
-  CTRL-O, Enter, CTRL-X
-
-  `kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env`
-
+root@iccws101:~/ICPGuestbook# kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env
+configmap/env-ibmcloud-configmap created
   ```
-  root@iccws101:~/ICPGuestbook# kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env
-  configmap/env-ibmcloud-configmap created
-  ```
-
   - Go in IBM Cloud Private console to see the Secrets and ConfigMaps that has been created
 
   ![1553857179051](images/1553857179051.png)
@@ -562,7 +557,7 @@ deployment.apps "redis-slave" deleted
 service "redis-slave" deleted
 ```
 
-## CHALLENGEvi 
+## CHALLENGE
 
 Deploy the Hybrid application using the following architecture :
 
