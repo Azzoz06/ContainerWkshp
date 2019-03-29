@@ -393,7 +393,7 @@ Create the service key for the Tone Analyzer service. This command should output
 
     `echo -n 'YOUR_APIKEY' > ./wta-apikey`
 
-    `kubectl create secret generic wta-apikey --from-file=./wta-apikey`
+    `kubectl create secret generic wta-apikey-secret --from-file=./wta-apikey`
 
   - Create ConfigMap containing Environment variable. Create ibmcloud.env file containing the environment variable to access Watson Tone Analyzer service.
 
