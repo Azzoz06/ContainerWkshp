@@ -23,7 +23,7 @@ The application consists of a web front end, Redis master for storage, and repli
 
 ### Prerequisites
 
-This lab assumes that you ICP installed and configured.
+This lab assumes that you have ICP installed and configured.
 
 First run the following command to connect to your ICP instance :
 
@@ -37,29 +37,26 @@ Then Clone the ICPGuestbook git repo :
 
 `git clone https://github.com/fdescollonges/ICPGuestbook.git`
 
-
-
 ### Create the Redis master pod
 
-Use the `redis-master-deployment.yaml` file to create a [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) and Redis master [pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/). The pod runs a Redis key-value server in a container. Using a replication controller is the preferred way to launch long-running pods, even for 1 replica, so that the pod benefits from the self-healing mechanism in Kubernetes (keeps the pods alive).
+Use the `redis-master-deployment.yaml` file to create a [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) and Redis master [pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/). The pod runs a Redis key-value server in a container. Using a deployment controller is the preferred way to launch long-running pods, even for 1 replica, so that the pod benefits from the self-healing mechanism in Kubernetes (keeps the pods alive).
 
-1. Use the [redis-master-deployment.yaml](redis-master-deployment.yaml) file to create the Redis master replication controller in your Kubernetes cluster by running the `kubectl apply -f` *`filename`* command:
+1. Use the [redis-master-deployment.yaml](redis-master-deployment.yaml) file to create the Redis master deployment in your Kubernetes cluster by running the `kubectl apply -f` *`filename`* command:
 
     ```console
     root@iccws101:~/ICPGuestbook# kubectl apply -f redis-master-deployment.yaml
     deployment.apps/redis-master created
     ```
 
-2. To verify that the redis-master controller is up, list the replication controllers you created in the cluster with the `kubectl get deployment` command (if you don't specify a `--namespace`, the `default` namespace will be used. The same below):
+2. To verify that the redis-master controller is up, list the deployments you created in the cluster with the `kubectl get deployment` command (if you don't specify a `--namespace`, the `default` namespace will be used. The same below):
 
     ```console
     root@iccws101:~/ICPGuestbook# kubectl get deployment
     NAME           DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
     redis-master   1         1         1            1           51s
-    
     ```
 
-    Result: The replication controller then creates the single Redis master pod.
+    Result: The delpoyment then creates the single Redis master pod.
 
 3. To verify that the redis-master pod is running, list the pods you created in cluster with the `kubectl get pods` command:
 
@@ -177,10 +174,10 @@ deployment.apps/redis-slave created
     
     ```
 
-    Result: The replication controller creates and configures the Redis slave pods through the redis-master service (name:port pair, in our example that's `redis-master:6379`).
+    Result: The deployment creates and configures the Redis slave pods through the redis-master service (name:port pair, in our example that's `redis-master:6379`).
 
     Example:
-    The Redis slaves get started by the replication controller with the following command:
+    The Redis slaves get started by the deployment with the following command:
 
     ```console
     redis-server --slaveof redis-master 6379
@@ -237,7 +234,7 @@ This is a simple Go `net/http` ([negroni](https://github.com/codegangsta/negroni
 
  Tip: If you want to modify the guestbook code it can be found in the `guestbook` directory, along with its Makefile. If you have pushed your custom image be sure to update the `image` property accordingly in the guestbook-deployment.yaml.
 
-2. To verify that the guestbook replication controller is running, run the `kubectl get deployment` command:
+2. To verify that the guestbook deployment is running, run the `kubectl get deployment` command:
 
     ```console
     root@iccws101:~/ICPGuestbook# kubectl get deployment
