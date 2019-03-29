@@ -18,7 +18,7 @@ The application consists of a web front end, Redis master for storage, and repli
  * [Create the guestbook pods](#create-the-guestbook-pods)
  * [Create the guestbook service](#create-the-guestbook-service)
  * [Create Watson Tone Analyzer on IBM Cloud](#create-watson-tone-analyzer-on-ibm-cloud)
- * [Manage connection to IBM Cloud configuration : Secret & ConfigMaps]()
+ * [Manage connection to IBM Cloud configuration : Secret & ConfigMaps](#manage-connection-to-ibm-cloud-configuration--secret--configmaps)
  * [View the guestbook](#view-the-guestbook)
  * [Cleanup](#cleanup)
 
