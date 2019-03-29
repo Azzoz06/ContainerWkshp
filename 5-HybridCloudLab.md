@@ -4,7 +4,9 @@
 
 This example shows how to build a simple hybrid multi-tier web application using ICP and IBM Cloud services. 
 
-The application consists of a web front end, Redis master for storage, and replicated set of Redis slaves, all for which we will create Kubernetes replication controllers, pods, and services and an analyser service which is connected to It also cont
+The application consists of a web front end, Redis master for storage, and replicated set of Redis slaves, all for which we will create Kubernetes deployments, pods, and services and an sentiment analyzer service which is connected to IBM Watson Tone Analyzer service on IBM Cloud
+
+![1553853175594](images/1553853175594.png)
 
 ##### Table of Contents
 
@@ -22,8 +24,6 @@ The application consists of a web front end, Redis master for storage, and repli
 ### Prerequisites
 
 This lab assumes that you ICP installed and configured.
-
-
 
 First run the following command to connect to your ICP instance :
 
@@ -129,6 +129,10 @@ metadata:
   uid: df3fd7f3-4a46-11e9-969c-06f6c97769e8
 spec:
   repositories:
+  - name: docker.io/*
+    policy:
+      va:
+        enabled: false
   - name: docker.io/kubernetes/*
     policy:
       va:
@@ -261,7 +265,7 @@ This is a simple Go `net/http` ([negroni](https://github.com/codegangsta/negroni
 
 ### Create the guestbook service
 
-Just like the others, we create a service to group the guestbook pods but this time, to make the guestbook front end externally visible, we specify `"type": "LoadBalancer"`.
+Just like the others, we create a service to group the guestbook pods but this time, to make the guestbook front end externally visible, we specify `"type": "NodePort"`.
 
 1. Use the [guestbook-service.yaml](guestbook-service.yaml) file to create the guestbook service by running the `kubectl apply -f` *`filename`* command:
 
@@ -272,13 +276,15 @@ Just like the others, we create a service to group the guestbook pods but this t
 
 2. To verify that the guestbook service is up, list the services you created in the cluster with the `kubectl get services` command:
 
-    ```console
-    $ kubectl get services
-    NAME              CLUSTER_IP       EXTERNAL_IP       PORT(S)       SELECTOR               AGE
-    guestbook         10.0.217.218     146.148.81.8      3000/TCP      app=guestbook          1h
-    redis-master      10.0.136.3       <none>            6379/TCP      app=redis,role=master  1h
-    redis-slave       10.0.21.92       <none>            6379/TCP      app-redis,role=slave   1h
-    ...
+    ```bash
+    root@iccws101:~/ICPGuestbook#  kubectl get services
+    NAME           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+    analyzer       ClusterIP   10.0.37.73     <none>        80/TCP         2m44s
+    guestbook      NodePort    10.0.228.206   <none>        80:32175/TCP   2m44s
+    kubernetes     ClusterIP   10.0.0.1       <none>        443/TCP        2d23h
+    redis-master   ClusterIP   10.0.251.59    <none>        6379/TCP       2m44s
+    redis-slave    ClusterIP   10.0.22.228    <none>        6379/TCP       2m43s
+    
     ```
 
     Result: The service is created with label `app=guestbook`.
@@ -289,9 +295,9 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
 
 1. Install the IBM Cloud [command line interface](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started) to access IBM Cloud public on your virtual server :
 
-       `curl -sL https://ibm.biz/idt-installer | bash`
+      curl -sL https://ibm.biz/idt-installer | bash
 
-2. Log in to the IBM Cloud CLI  using your IBM ID created in [https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md](https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md)
+2. Log in to the IBM Cloud CLI  using your own IBM ID created in preparation lab :[https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md](https://github.com/fdescollonges/ContainerWkshp/blob/master/1-PrepareLab.md)
 
    `root@iccws101:~/ICPGuestbook# ibmcloud login`
 
@@ -388,21 +394,133 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
 
       ibmcloud resource service-key tone-analyzer-key
 
-6. Open the `analyzer-deployment.yaml` and find the env section near the end of the file. Replace `YOUR_API_KEY` with your own API key, and replace `YOUR_URL` with the url value you saved before. YOUR_URL should look something like `https://gateway.watsonplatform.net/tone-analyzer/api`. Save the file.
+6. To externalize the configuration of the remote service, we will use 2 Kubernetes resources : Secrets (to manage passwords and keys) and ConfigMaps (to manager environment configuration). 
 
-7. Deploy the analyzer pods using the `analyzer-deployment.yaml`  : 
+  - Create Secret containing API Key (replace YOUR_APIKEY with your api key from previous step. Keep the quotes around the key)
+
+    `echo -n 'YOUR_APIKEY' > ./wta-apikey`
+
+    `kubectl create secret generic wta-apikey --from-file=./wta-apikey`
+
+  - Create ConfigMap containing Environment variable
 
   ```
-   root@iccws101:~/ICPGuestbook# kubectl apply -f analyzer-deployment.yaml
-   deployment.apps/analyzer created
+  nano ibmcloud.env
   ```
 
-  Create the analyzer service using  `analyzer-service.yaml` :
+  ```
+  VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS=https://iam.bluemix.net/identity/token
+  VCAP_SERVICES_TONE_ANALYZER_SERVICE_API=YOUR_URL
+  ```
+
+  CTRL-O, Enter, CTRL-X
+
+  `kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env`
 
   ```
-   root@iccws101:~/ICPGuestbook# kubectl apply -f analyzer-service.yaml
-   service/analyzer created
+  root@iccws101:~/ICPGuestbook# kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env
+  configmap/env-ibmcloud-configmap created
   ```
+
+  - Go in IBM Cloud Private console to see the Secrets and ConfigMaps that has been created
+
+  ![1553857179051](images/1553857179051.png)
+
+  ![1553857261708](images/1553857261708.png)
+
+  ![1553858138718](images/1553858138718.png)
+
+7. Deploy the analyzer application to ICP
+   - Open the `analyzer-deployment.yaml` and have a look at the  env section of the file :
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analyzer
+  labels:
+    app: analyzer
+spec:
+  selector:
+    matchLabels:
+      app: analyzer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: analyzer
+    spec:
+      containers:
+      - name: analyzer
+        image: ibmcom/analyzer:v1.1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: VCAP_SERVICES_TONE_ANALYZER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wta-apikey-secret
+              key: wta-apikey
+        - name : VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: env-ibmcloud-configmap
+              key: VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS
+        - name: VCAP_SERVICES_TONE_ANALYZER_SERVICE_API
+          valueFrom:
+            configMapKeyRef:
+              name: env-ibmcloud-configmap
+              key: VCAP_SERVICES_TONE_ANALYZER_SERVICE_API
+        ports:
+        - containerPort: 5000
+          name: http
+```
+
+**Don't change the file**
+
+- Deploy the analyzer pods using the `analyzer-deployment.yaml`  : 
+
+```bash
+ root@iccws101:~/ICPGuestbook# kubectl apply -f analyzer-deployment.yaml
+ deployment.apps/analyzer created
+```
+
+Create the analyzer service using  `analyzer-service.yaml` :
+
+```bash
+ root@iccws101:~/ICPGuestbook# kubectl apply -f analyzer-service.yaml
+ service/analyzer created
+```
+
+Check the environment variables have been set : 
+
+- Retrieve Analyzer pod ID (here analyzer-58644696f7-8tzsj) : 
+
+```
+root@iccws101:~/ICPGuestbook# kubectl get pods | grep analyzer
+analyzer-58644696f7-8tzsj       1/1     Running   0          24s
+```
+
+- Enter the POD in interactive mode (use your own pod id) :
+
+```
+root@iccws101:~/ICPGuestbook# kubectl exec -it analyzer-58644696f7-8tzsj /bin/bash
+root@analyzer-58644696f7-8tzsj:/#
+```
+
+- Look at environment variables : 
+
+```bash
+root@analyzer-58644696f7-8tzsj:/# env | grep TONE_ANALYZER
+VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS=https://iam.bluemix.net/identity/token
+VCAP_SERVICES_TONE_ANALYZER_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+VCAP_SERVICES_TONE_ANALYZER_SERVICE_API=https://gateway.watsonplatform.net/tone-analyzer/api
+```
+
+- Exit the pod shell
 
 Great! Your hybrid guestbook application is up and running, accessing Watson Tone Analyzer on IBM Cloud.
 
@@ -410,29 +528,46 @@ Great! Your hybrid guestbook application is up and running, accessing Watson Ton
 
 You can now play with the guestbook that you just created by opening it in a browser.
 
-1. To view the guestbook on a remote host, locate the external IP of the load balancer in the **IP** column of the `kubectl get services` output. In our example, the internal IP address is `10.0.217.218` and the external IP address is `146.148.81.8` (*Note: you might need to scroll to see the IP column*).
+1. Open ICP Console : `https://<<ipaddress>:8443/console/welcome`
 
-2. Append port `3000` to the IP address (for example `http://146.148.81.8:3000`), and then navigate to that address in your browser.
+2. Open Deployments : 
 
-Result: The guestbook displays in your browser:
+   ![1553847844339](images/1553847844339.png)
 
-![1553784664011](images/1553784664011.png)
+3. Click `Launch` at the end of the guestbook-v2 line : 
+
+4. ![1553848106739](images/1553848106739.png)
+
+**Congratulations : The guestbook displays in your browser**
+
+![1553847697367](images/1553847697367.png)
 
 
 ### Cleanup
 
-After you're done playing with the guestbook, you can cleanup by deleting the guestbook service and removing the associated resources that were created, including load balancers, forwarding rules, target pools, and Kubernetes replication controllers and services.
+After you're done playing with the guestbook, you can cleanup by deleting the guestbook service and removing the associated resources that were created.
 
 Delete all the resources by running the following `kubectl delete -f .` command:
 
 ```console
-$ kubectl delete -f .
-replicationcontroller "guestbook" deleted
+root@iccws101:~/ICPGuestbook# kubectl delete -f .
+deployment.apps "analyzer" deleted
+service "analyzer" deleted
+deployment.apps "guestbook-v2" deleted
+imagepolicy.securityenforcement.admission.cloud.ibm.com "guestbookimagepolicy" deleted
 service "guestbook" deleted
-replicationcontroller "redis-master" deleted
+deployment.apps "redis-master" deleted
 service "redis-master" deleted
-replicationcontroller "redis-slave" deleted
+deployment.apps "redis-slave" deleted
 service "redis-slave" deleted
 ```
+
+## CHALLENGEvi 
+
+Deploy the Hybrid application using the following architecture :
+
+![1553853690110](images/1553853690110.png)
+
+
 
 # IBM Cloud Container Workshop
