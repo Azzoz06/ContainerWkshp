@@ -17,7 +17,8 @@ The application consists of a web front end, Redis master for storage, and repli
  * [Create the Redis slave service](#create-the-redis-slave-service)
  * [Create the guestbook pods](#create-the-guestbook-pods)
  * [Create the guestbook service](#create-the-guestbook-service)
- * [Use Watson Tone Analyzer on IBM Cloud](#use-watson-tone-analyzer-on-ibm-cloud)
+ * [Create Watson Tone Analyzer on IBM Cloud](#create-watson-tone-analyzer-on-ibm-cloud)
+ * [Manage connection to IBM Cloud configuration : Secret & ConfigMaps]()
  * [View the guestbook](#view-the-guestbook)
  * [Cleanup](#cleanup)
 
@@ -286,7 +287,7 @@ Just like the others, we create a service to group the guestbook pods but this t
 
     Result: The service is created with label `app=guestbook`.
 
-### Use Watson Tone Analyzer on IBM Cloud
+### Create Watson Tone Analyzer on IBM Cloud
 
 Watson Tone Analyzer detects the tone from the words that users enter into the Guestbook app. The tone is converted to the corresponding emoticons.
 
@@ -298,7 +299,7 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
 
    `root@iccws101:~/ICPGuestbook# ibmcloud login`
 
-  ```
+  ```bash
    root@iccws101:~/ICPGuestbook# ibmcloud login
    API endpoint: cloud.ibm.com
    
@@ -336,14 +337,11 @@ Watson Tone Analyzer detects the tone from the words that users enter into the G
    - Use 'ibmcloud cf' if you want to run the Cloud Foundry CLI with current IBM Cloud CLI context.
   ```
 
-
-  ​    
-
 3. Create Watson Tone Analyzer in your account.
 
    `ibmcloud resource service-instance-create my-tone-analyzer-service tone-analyzer lite us-south`
 
-  ```
+  ```bash
   root@iccws101:~/ICPGuestbook# ibmcloud resource service-instance-create my-tone-analyzer-service tone-analyzer lite us-south
    Creating service instance my-tone-analyzer-service in resource group Default of account ICCWS ICCWS's Account as tufih@mailfavorite.com...
    OK
@@ -365,39 +363,43 @@ Create the service key for the Tone Analyzer service. This command should output
 
   `ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service`
 
-    root@iccws101:~/ICPGuestbook# ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service
-    
-    Creating service key of service instance my-tone-analyzer-service under account ICCWS ICCWS's Account as tufih@mailfavorite.com...
-    AAA: de2d50dd82ac4a19aa30a74a5807afdb
-    OK
-    Service key crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8 was created.
-    
-    Name:          tone-analyzer-key
-    ID:            crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8
-    Created At:    Thu Mar 28 14:17:23 UTC 2019
-    State:         active
-    Credentials:
-                   iam_apikey_name:          auto-generated-apikey-738cecf2-c140-410d-ba68-d4d81658a1b8
-                   iam_role_crn:             crn:v1:bluemix:public:iam::::serviceRole:Manager
-                   iam_serviceid_crn:        crn:v1:bluemix:public:iam-identity::a/95f04fe00e284449bd3990ee72688be3::serviceid:ServiceId-bb3e3496-7a4f-4326-aa07-235774946f6e
-                   url:                      https://gateway.watsonplatform.net/tone-analyzer/api
-                   apikey:                   xxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                   iam_apikey_description:   Auto generated apikey during resource-key operation for Instance - crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0::
+```bash
+root@iccws101:~/ICPGuestbook# ibmcloud resource service-key-create tone-analyzer-key Manager --instance-name my-tone-analyzer-service
+
+Creating service key of service instance my-tone-analyzer-service under account ICCWS ICCWS's Account as tufih@mailfavorite.com...
+AAA: de2d50dd82ac4a19aa30a74a5807afdb
+OK
+Service key crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8 was created.
+
+Name:          tone-analyzer-key
+ID:            crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0:resource-key:738cecf2-c140-410d-ba68-d4d81658a1b8
+Created At:    Thu Mar 28 14:17:23 UTC 2019
+State:         active
+Credentials:
+               iam_apikey_name:          auto-generated-apikey-738cecf2-c140-410d-ba68-d4d81658a1b8
+               iam_role_crn:             crn:v1:bluemix:public:iam::::serviceRole:Manager
+               iam_serviceid_crn:        crn:v1:bluemix:public:iam-identity::a/95f04fe00e284449bd3990ee72688be3::serviceid:ServiceId-bb3e3496-7a4f-4326-aa07-235774946f6e
+               url:                      https://gateway.watsonplatform.net/tone-analyzer/api
+               apikey:                   xxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+               iam_apikey_description:   Auto generated apikey during resource-key operation for Instance - crn:v1:bluemix:public:tone-analyzer:us-south:a/95f04fe00e284449bd3990ee72688be3:f755c4fa-be4a-4c9f-9b66-45773412abb0::
+```
 5. if you need to get the service-keys later, you can use the following command:
 
       ibmcloud resource service-key tone-analyzer-key
 
-6. To externalize the configuration of the remote service, we will use 2 Kubernetes resources : Secrets (to manage passwords and keys) and ConfigMaps (to manager environment configuration). 
+### Manage connection to IBM Cloud configuration : Secret & ConfigMaps
 
-  - Create Secret containing API Key (replace YOUR_APIKEY with your api key from previous step. Keep the quotes around the key)
+To externalize the configuration of the remote service, we will use 2 Kubernetes resources : Secrets (to manage passwords and keys) and ConfigMaps (to manager environment configuration). 
 
-    `echo -n 'YOUR_APIKEY' > ./wta-apikey`
+1. Create Secret containing API Key (replace YOUR_APIKEY with your api key from previous step. Keep the quotes around the key)
 
-    `kubectl create secret generic wta-apikey-secret --from-file=./wta-apikey`
+   `echo -n 'YOUR_APIKEY' > ./wta-apikey`
 
-  - Create ConfigMap containing Environment variable. Create ibmcloud.env file containing the environment variable to access Watson Tone Analyzer service.
+   `kubectl create secret generic wta-apikey-secret --from-file=./wta-apikey`
 
-     `nano ibmcloud.env`
+2. Create ConfigMap containing Environment variable. Create ibmcloud.env file containing the environment variable to access Watson Tone Analyzer service.
+
+    `nano ibmcloud.env`
 
 ```
   VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS=https://iam.bluemix.net/identity/token
@@ -414,7 +416,7 @@ Create the service key for the Tone Analyzer service. This command should output
 root@iccws101:~/ICPGuestbook# kubectl create configmap env-ibmcloud-configmap --from-env-file=ibmcloud.env
 configmap/env-ibmcloud-configmap created
   ```
-  - Go in IBM Cloud Private console to see the Secrets and ConfigMaps that has been created
+3. Go in IBM Cloud Private console to see the Secrets and ConfigMaps that has been created
 
   ![1553857179051](images/1553857179051.png)
 
@@ -422,8 +424,9 @@ configmap/env-ibmcloud-configmap created
 
   ![1553858138718](images/1553858138718.png)
 
-7. Deploy the analyzer application to ICP
-   - Open the `analyzer-deployment.yaml` and have a look at the  env section of the file :
+4. Deploy the analyzer application to ICP
+
+- Open the `analyzer-deployment.yaml` and have a look at the  env section of the file :
 
 ```yaml
 apiVersion: apps/v1
@@ -471,7 +474,7 @@ spec:
           name: http
 ```
 
-**Don't change the file**
+> **Don't change the file**
 
 - Deploy the analyzer pods using the `analyzer-deployment.yaml`  : 
 
@@ -512,9 +515,7 @@ VCAP_SERVICES_TONE_ANALYZER_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 VCAP_SERVICES_TONE_ANALYZER_SERVICE_API=https://gateway.watsonplatform.net/tone-analyzer/api
 ```
 
-- Exit the pod shell
-
-Great! Your hybrid guestbook application is up and running, accessing Watson Tone Analyzer on IBM Cloud.
+- Exit the pod shell (using `exit`)
 
 ### View the guestbook
 
@@ -530,9 +531,11 @@ You can now play with the guestbook that you just created by opening it in a bro
 
 4. ![1553848106739](images/1553848106739.png)
 
+![1553847697367](images/1553847697367.png)
+
 **Congratulations : The guestbook displays in your browser**
 
-![1553847697367](images/1553847697367.png)
+Your hybrid guestbook application is up and running, accessing **Watson Tone Analyzer on IBM Cloud**.
 
 
 ### Cleanup
@@ -554,9 +557,9 @@ deployment.apps "redis-slave" deleted
 service "redis-slave" deleted
 ```
 
-## CHALLENGE
+## ANNEXE
 
-Deploy the Hybrid application using the following architecture :
+Challenge : Deploy the Hybrid application using the following architecture :
 
 ![1553853690110](images/1553853690110.png)
 
