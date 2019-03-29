@@ -401,9 +401,9 @@ To externalize the configuration of the remote service, we will use 2 Kubernetes
 
     `nano ibmcloud.env`
 
-```
-  VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS=https://iam.bluemix.net/identity/token
-  VCAP_SERVICES_TONE_ANALYZER_SERVICE_API=YOUR_URL
+```bash
+VCAP_SERVICES_TONE_ANALYZER_TOKEN_ADDRESS=https://iam.bluemix.net/identity/token
+VCAP_SERVICES_TONE_ANALYZER_SERVICE_API=YOUR_URL
 ```
 
 ​		Hit `CTRL-O`, `Enter`, `CTRL-X ` to save the file.
@@ -418,7 +418,7 @@ configmap/env-ibmcloud-configmap created
   ```
 3. Go in IBM Cloud Private console to see the Secrets and ConfigMaps that has been created
 
-  ![1553857179051](images/1553857179051.png)
+     ![1553857179051](images/1553857179051.png)
 
   ![1553857261708](images/1553857261708.png)
 
