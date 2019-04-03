@@ -62,7 +62,7 @@ This lab is compatible with ICP version 3.1.2
 
 See below a global picture showing ICP architecture and most common components.
 
-![Architecture](../../../../IBM%202019/ContainersWorkshop/sources/icp31/images/architecture.png)
+![Architecture](images/architecture.png)
 
 This lab is going to focus on "Docker / Kubernetes / Helm" which are the main foundation of IBM Cloud Private. 
 
@@ -854,7 +854,7 @@ And finally push the image to the ICP registry:
 Result:
 
 ```
-# docker push mycluster.icp:8500/default/hello-world:2
+# docker push 
 The push refers to repository [mycluster.icp:8500/default/hello-world]
 0a7c2f714c9d: Pushed 
 8a3495226438: Pushed 
@@ -920,6 +920,7 @@ spec:
 - Look into the deployment and see that the **spec** contains a ReplicaSet (see the `replicas` term) and that the ReplicaSet includes a Pod
 - The Pod is defined as a template that contains the similar structure of metadata and specification
 - The specification of the pod includes an array of containers that refers to an image.
+  - **Change** **image** to : `mycluster.icp:8500/default/hello-world:2`
 - The livenessProbe and readinessProbe are checks that the kubernetes system would perform to check pod's health. In this example, we have defined a HTTP liveness probe to check health of the container every five seconds. **For the first 10-15 seconds the `/healthz` returns a `200` response and will fail afterward**. Kubernetes will automatically restart the service.
 
 Review the **service's manifest**
