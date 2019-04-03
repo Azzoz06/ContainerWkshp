@@ -21,7 +21,12 @@ version 1.0
 **Day Two**
 + Helm overview
   + _Kubernetes & Helm **Lab** on ICP_
+
   + [https://github.com/Azzoz06/ContainerWkshp/blob/master/4-KubernetesHelmOnICP.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/4-KubernetesHelmOnICP.md)
+
+  + <https://github.com/Azzoz06/ContainerWkshp/blob/master/5-HybridCloudLab.md>
+
+    
 + Application Patterns
   + MicroServices /Cloud Native Applications
   + Transformation Advisor
@@ -29,9 +34,10 @@ version 1.0
 + _DevOps **Lab**_
   + _Jenkins/Microclimate **Labs**_
   + [https://github.com/Azzoz06/ContainerWkshp/blob/master/6-Microclimate%20and%20Jenkins%20Lab.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/6-Microclimate%20and%20Jenkins%20Lab.md)
-  + _IBM Cloud Toolchain / Pipeline **Demo**_
+  + _Optional : IBM Cloud Toolchain / Pipeline **Demo**_
   + [https://github.com/Azzoz06/ContainerWkshp/blob/master/6-Toolchain%20Lab.md](https://github.com/Azzoz06/ContainerWkshp/blob/master/6-Toolchain%20Lab.md)
 + Monitoring
+
   + _**Demos** Prometheus / Grafana_
 + Wrap Up
 
