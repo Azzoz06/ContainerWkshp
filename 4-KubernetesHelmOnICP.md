@@ -80,6 +80,10 @@ From your web browser, go the following address where *ipaddress* is the IP your
 
 `https://ipaddress:8443`  
 
+**Userid** : admin
+
+**Password** : admin1!
+
 ![Loginicp](images/loginicp.png)
 
 You should receive the **Welcome Page**:
