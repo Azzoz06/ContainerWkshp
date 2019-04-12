@@ -990,7 +990,7 @@ First retreive kubernetes configuration for ICP :
 
 Then check helm version : 
 
-`helm version —tls`
+`helm version --tls`
 
 Results:
 
