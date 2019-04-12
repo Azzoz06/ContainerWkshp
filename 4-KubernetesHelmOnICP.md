@@ -1575,7 +1575,7 @@ error: You must be logged in to the server (Unauthorized)
 
 Results :
 
-![visecrets](../../../../IBM%202019/ContainersWorkshop/sources/icp31/images/visecrets.png)
+![visecrets](images/visecrets.png)
 
 
 
@@ -1821,7 +1821,7 @@ http://ipaddress:8081/
 
 You should see :
 
-![NGINX](../../../../IBM%202019/ContainersWorkshop/IBMCloudContainerWorkshop/ContainerWkshp/images/nginx2.png)  
+![NGINX](images/nginx2.png)  
 
 
 
