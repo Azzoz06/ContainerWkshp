@@ -769,7 +769,8 @@ Create a new service:
 
 Take a note of the NodePort in the description. The NodePord is working against the public IP address of the worker node (in this case this is our unique **ipaddress**)
 
-(Reminder : use `kubectl describe service` )
+> Reminder : use `kubectl describe service` 
+>
 
 Perform a curl `http://ipaddress:<nodeport>` to confirm your new code is active or open a browser and you see "Great Job for the second stage".
 
@@ -1003,7 +1004,7 @@ Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"843201eceab24e7102ebb87
 
 > If you don't see the client and servers numbers or an error, then proceed to the helm installation.
 
-### Installing helm (optional if Server )
+### Installing helm (optional)
 
 Helm is a client/server application : Helm client and Tiller server.
 Before we can run any chart with helm, we should proceed to some installation and configuration.
@@ -1049,6 +1050,8 @@ Happy Helming!
 After you have initialize helm client. Try the following command to see the version:
 
 `helm version --tls`
+
+> Reminder : Don't forget `--tls` in all your helm commands
 
 Results:
 
@@ -1239,6 +1242,8 @@ Change the **-port section** with the following code (don't introduce any TAB in
           protocol: TCP
           nodePort: {{ .Values.service.nodePort }}
           name: {{ .Values.service.name }}
+> **Notice :** There is 3 ports to define when using nodePort
+
 So the service should look as follows:
 
 ```
@@ -1340,6 +1345,10 @@ NOTES:
   export NODE_IP=$(kubectl get nodes --namespace training -o jsonpath="{.items[0].status.addresses[0].address}")
   echo http://$NODE_IP:$NODE_PORT
 ```
+
+
+
+> Reminder : Don't forget `--tls` in all your helm commands
 
 
 
